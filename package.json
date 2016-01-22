@@ -1,0 +1,26 @@
+{
+  "name": "react-native-smooth",
+  "version": "0.3.4",
+  "description": "",
+  "main": "smooth.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rocman/react-native-smooth.git"
+  },
+  "keywords": [
+    "react-native-component",
+    "react-component",
+    "react-native",
+    "transform",
+    "smooth"
+  ],
+  "author": "Rocman Zhao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brentvatne/react-native-scrollable-tab-view/issues"
+  },
+  "homepage": "https://github.com/brentvatne/react-native-scrollable-tab-view#readme"
+}

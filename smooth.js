@@ -178,7 +178,7 @@ export default {
                 this.setState(meta.propsIntegrator(value), tween);
               });
             };
-            tween();
+            this.setState(meta.propsIntegrator(origin), tween);
           }
         });
       }

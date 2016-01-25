@@ -1,4 +1,4 @@
-import React, {Component} from 'react-native';
+import React, {Component, InteractionManager} from 'react-native';
 
 class PropMeta {
   constructor(params) {
@@ -9,14 +9,9 @@ class PropMeta {
   }
   propsIntegrator(value) {
     const propName = this.propName;
-    return function integrateIntoProps(props) {
-      props[propName] = value;
+    return function integrateIntoProps(previousState, currentProps) {
+      previousState[propName] = value;
     }; 
-  }
-  propsIntegration(value) {
-    return {
-      [this.propName]: this.propsIntegrator(value)
-    };
   }
 }
 
@@ -131,21 +126,21 @@ export default {
   NumbericPropMeta,
   CoordinatePropMeta,
   ColorPropMeta,
-  createSmoothComponent: function(ComponentToSmooth, metasOfPropsToSmooth, duration = 300) {
+  createSmoothComponent: function(ComponentToSmooth, metasOfPropsToSmooth, duration = 200) {
     return class extends Component {
       constructor() {
         super(...arguments);
         this.state = {};
-        this.timeoutsForTweens = {};
+        this.animationFrames = {};
         this.targets = {};
       }
       render() {
-        const props = {...this.props};
-        for (let i in this.state) {
-          this.state[i](props);
+        const {smoothEnabled = true, ...passProps} = this.props;
+        if (smoothEnabled) {
+          Object.assign(passProps, this.state);
         }
         return (
-          <ComponentToSmooth {...props} />
+          <ComponentToSmooth {...passProps} />
         );
       }
       componentWillReceiveProps(nextProps) {
@@ -153,39 +148,41 @@ export default {
           super.componentWillReceiveProps(...arguments);
         }
         const start = new Date;
+        const props = {...this.props, ...this.state};
         metasOfPropsToSmooth.forEach(meta => {
-          const propName = meta.propName;
           const target = meta.default(meta.getFromProps(nextProps));
-          const origin = meta.default(meta.getFromProps(this.props));
-          if (this.timeoutsForTweens[propName]) {
-            cancelAnimationFrame(this.timeoutsForTweens[propName]);
-            this.timeoutsForTweens[propName] = null;
-            this.setState(meta.propsIntegration(this.targets[propName]));
+          if (nextProps.smoothEnabled === false) {
+            this.setState(meta.propsIntegrator(target));
+            return;
           }
-          this.targets[propName] = target;
+          const origin = meta.default(meta.getFromProps(props));
+          const propName = meta.propName;
           if (meta.differ(target, origin)) {
+            if (this.animationFrames[propName]) {
+              cancelAnimationFrame(this.animationFrames[propName]);
+              this.animationFrames[propName] = null;
+              this.setState(meta.propsIntegrator(this.targets[propName]));
+            }
+            this.targets[propName] = target;
             const diff = meta.substract(target, origin);
             const unit = meta.divide(diff, duration);
             let tween = () => {
-              this.timeoutsForTweens[propName] = requestAnimationFrame(() => {
+              this.animationFrames[propName] = requestAnimationFrame(() => {
                 const timePassed = new Date - start;
-                if (timePassed > duration) {
-                  this.timeoutsForTweens[propName] = null;
-                  this.setState(meta.propsIntegration(target));
-                  tween = null;
+                if (timePassed >= duration) {
+                  this.animationFrames[propName] = null;
+                  this.setState(meta.propsIntegrator(target));
                   return;
                 }
                 const value = meta.add(origin, meta.multiply(unit, timePassed));
-                const wrap = meta.propsIntegration(value);
-                this.setState(wrap, tween);
+                this.setState(meta.propsIntegrator(value), tween);
               });
             };
             tween();
             return;
           }
-          this.setState(meta.propsIntegration(target));
         });
       }
     }
-  } 
+  }
 }

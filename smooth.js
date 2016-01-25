@@ -10,8 +10,8 @@ class PropMeta {
   propsIntegrator(value) {
     const propName = this.propName;
     return function integrateIntoProps(previousState, currentProps) {
-      previousState[propName] = value;
-    }; 
+      return {...previousState, [propName]: value};
+    };
   }
 }
 

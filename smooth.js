@@ -182,6 +182,14 @@ export default {
           }
         });
       }
+      componentWillUnmount() {
+        for (let i in this.animationFrames) {
+          cancelAnimationFrame(this.animationFrames[i]);
+        }
+        this.state = {};
+        this.animationFrames = {};
+        this.targets = {};
+      }
     }
   }
 }

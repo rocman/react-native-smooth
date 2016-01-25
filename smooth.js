@@ -126,7 +126,7 @@ export default {
   NumbericPropMeta,
   CoordinatePropMeta,
   ColorPropMeta,
-  createSmoothComponent: function(ComponentToSmooth, metasOfPropsToSmooth, duration = 200) {
+  createSmoothComponent(ComponentToSmooth, metasOfPropsToSmooth, duration = 200) {
     return class extends Component {
       constructor() {
         super(...arguments);
@@ -179,7 +179,6 @@ export default {
               });
             };
             tween();
-            return;
           }
         });
       }
